@@ -34,18 +34,23 @@
 	    </button>
 	    <div class="collapse navbar-collapse" id="navbarNav">
 	      <ul class="navbar-nav">
+	      	{% if session["Auth"] %}
 	        <li class="nav-item">
-	          <a class="nav-link" href="#">Cerrar sesion</a>
+	          <a class="nav-link" href="/logout">Cerrar sesion</a>
 	        </li>
 	        <li class="nav-item">
-	          <a class="nav-link disabled">Priviet comrade @</a>
+	          <a class="nav-link active mx-5">Priviet camarada @{{ session.username|title }}</a>
 	        </li>
+	        {% endif %}
 	      </ul>
 	    </div>
-	  </div>
 	</nav>
 
+
+
 			{% block body %}
+
+
 				<!--Aca vendria la inyeccion de nuestros html-->
 			{% endblock %}
 

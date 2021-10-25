@@ -1,24 +1,15 @@
 <!--pantalla de inicio de sesion para el usuario-->
 {% extends "layout.html" %}
 {% block body %}
-
-<div class="jumbotron jumbotron-fluid bg-Mcard text-light justified rounded">
-			<h1 class="display-4 text-centered">Identifiquese o sera enviado al gulag!!!</h1>
-			<hr class="my-4">
-			<div class="align-items-center aling-self-center">
-				<div class="p-5">
-				<form action="{{ url_for('index') }}" method="post" class="text-centered">
-					<div class="form-floating centered col-sm-4 text-dark">
-						<input type="text" class="form-control" id="username" name="username" required>
-						<label for="username">Nombre <i class="fas fa-user fa-xs ialing"></i></label>
-					</div>
-					<button class="btn btn-primary margin-3" href="/main">Identificarse</button>
-				</form>
-				<a class="btn btn-primary margin-3" href="/main">bypass</a>
-			</div>
-			</div>
-		</div>
-
-
+<div class="row" style="width: 90%;">
+  <div class="col-4">
+  	<div class="jumbotron bg-Scard" style="width: 100%;">
+  	  sas
+  	</div>
+  </div>
+  <div class="col-8">
+  	<div class="jumbotron bg-Scard" style="width: 100%;">xda</div>
+  </div>
+</div>
 {% endblock %}
 <!--/pantalla de inicio de sesion para el usuario-->
