@@ -22,7 +22,7 @@ from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 
 
@@ -30,17 +30,7 @@ socketio = SocketIO(app)
 Users=[]
 Channels=[]
 Messages= dict()
-
 Channels.append('General')
-Channels.append('Xda')
-Channels.append('Xda')
-Channels.append('Xda')
-Channels.append('Xda')
-Channels.append('Xda')
-Channels.append('Xda')
-Channels.append('Xda')
-Channels.append('Xda')
-Channels.append('Xda')
 Messages['General']=deque()
 
 def login_required(f):
@@ -72,15 +62,18 @@ def login():
             session['username']=username
             session.permanet=True
             session["Auth"]= True
-
+            socketio.emit('Join_true')
             return redirect("/channels/General")
 
 @app.route("/logout", methods=['GET','POST'])
 @login_required
 def logout():
     # se limpia la sesion del usuario
-    Users.remove(session['username'])
-    session.clear()
+    try:
+        Users.remove(session['username'])
+        session.clear()
+    except:
+        session.clear()
     # se le notifica al usuario y se le redirije a la pagina de inicio de sesion
     flash("Sesion cerrada")
     return render_template("login.html")
@@ -98,4 +91,25 @@ def channels_list(channel):
             return redirect("/")
         else:
             return render_template("channels.html",user=user,users=Users,channels=Channels,messages=Messages[channel],channel=session['open_channel'])
-            
+
+
+@socketio.on('NewChannel')
+def New_channel(data):
+    ChannelName = data['NewChannelName']
+    if ChannelName in Channels:
+        emit('Error', {'error': 'El canal ya se encuentra en la lista de canales'})
+    else:
+        if len(ChannelName) == 0:
+            emit('Error', {'error': 'El canal no puede estar en blanco'})
+        else:
+            Channels.append(ChannelName)
+            Messages[ChannelName] = []
+            emit('AddChannel', {'Channel': ChannelName}, broadcast=True)
+
+@socketio.on('Join')
+def Join_message(data):
+    Username = data['Username']
+    Channel = session['open_channel']
+    join_room(Channel)
+    emit('DataUser', {'user': Username, 'channel': Channel,'bot': '!: un(@)' + Username + ' salvaje ha aparecido'}, room=Channel)
+
