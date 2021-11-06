@@ -1,0 +1,57 @@
+<!--pantalla de inicio de sesion para el usuario-->
+{% extends "layout.html" %}
+{% block title %}{{ channel }}{% endblock %}
+{% block body %}
+
+
+<div class="card text-center m-5 bg-dark" style="min-height:80vh">
+  <div class="card-header bg-red">
+    <ul class="nav nav-pills card-header-pills">
+      <li class="nav-item">
+        <a type="button" class="btn btn-light btn-outline-danger btn-sm centered">
+          # <span class="badge badge-danger text-dark" id="CurrentChannelDisplay">{{ channel }}</span>
+        </a>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle px-3 text-light" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color:transparent;">
+          Lista de canales
+        </a>
+        <div id="ChannelList" class="dropdown-menu bg-dark" aria-labelledby="navbarDropdown">
+        {% for channel in ChannelList %}
+          <a class="dropdown-item text-light ChannelLink" href="/channel/{{ channel }}">{{ channel }}</a>
+        {% endfor %}
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 text-light" href="/create">Crear nuevo canal</a>
+      </li>
+    </ul>
+  </div>
+  <div class="card-body" style="height: 60vh;">
+    <div class="bg-dark" style="resize: none; height : 63vh; width: 100%;overflow-y: scroll">
+
+      <ul id="ChatArea">
+          {% if messages %}
+              {% for message in messages %}
+              <li class="text-light msg-bubble"><small class="msg text-muted">{{message[0]}}</small> <strong class="data-msg">{{message[1]}}:</strong> <small> {{message[2]}}</small></li>
+              {% endfor %}
+          {% endif %}
+      </ul>
+
+    </div>
+  </div>
+  <div class="card-body">
+    <hr/>
+    <div class="row justify-content-md-center">
+    <div class="col-8"  style="height: 5vh">
+      <textarea class="bg-light text-dark" type="text" style="resize: none; height: 5vh; width: 100%" id="MSGbox"></textarea>
+    </div>
+    <div class="col-auto">
+      <button type="button" class="btn btn-primary bg-red btn-sm" id="SendBTN">Enviar <i class="far fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  </div>
+</div>
+{% endblock %}
+<!--/pantalla de inicio de sesion para el usuario-->

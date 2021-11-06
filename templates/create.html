@@ -1,0 +1,69 @@
+<!--pantalla de inicio de sesion para el usuario-->
+{% extends "layout.html" %}
+{% block title %}Create Channel{% endblock %}
+{% block body %}
+
+
+<div class="card text-center m-5 bg-dark" style="min-height:80vh">
+  <div class="card-header bg-red">
+    <ul class="nav nav-pills card-header-pills">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle px-3 text-light" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background-color:transparent;">
+          Lista de canales
+        </a>
+        <div id="ChannelList" class="dropdown-menu bg-dark" aria-labelledby="navbarDropdown">
+        {% for channel in ChannelList %}
+          <a class="dropdown-item text-light ChannelLink" href="/channel/{{ channel }}">{{ channel }}</a>
+        {% endfor %}
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="card-body" style="min-height: 80vh;">
+    <div class="bg-dark" style="resize: none; min-height : 55vh; width: 100%">
+      <!--Flash de mensaje para el usuario-->
+			{% with messages = get_flashed_messages() %}
+			{% if messages %}
+			<div class="centered,text-centered">
+				{% for message in messages %}
+				<div class="alert alert-primary col-sm-6 centered" role="alert">
+					<i class="fas fa-info-circle"></i>
+					{{ message }}
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				</div>
+				{% endfor %}
+			</div>
+			{% endif %}
+			{% endwith %}
+			<!--/Flash de mensaje para el usuario-->
+
+			<div class="card text-center bg-dark text-light centered">
+  <div class="card-body">
+    <h5 class="card-title"> Bienvenid@ a nuestra web de canales de comunicacion</h5>
+    <p class="card-text">Sientete comodo de crear,ingresar y escribir en cualquiera de ellos,puedes probar a crear un canal general para que todos puedan unirse</p>
+            <div class="form-floating centered col-sm-4 text-dark">
+						<input type="text" class="form-control" id="NewChannelName" name="channelname" autocomplete="off" required>
+						<label for="channelname">Nombre del canal <i class="far fa-comments"></i></label>
+					</div>
+					<a class="btn bg-red margin-3" id="CreateChannelBTN">Crear canal <i class="fas fa-plus-circle"></i></a>
+        </br>
+          {% if Lastchannel != 'NoNe_CHannEL' %}
+          <div class="m-2 p-2">
+          <a class="btn bg-red margin-5" href="/channel/{{ Lastchannel }}">Cargar ultimo canal #{{ Lastchannel }}</a>
+        </div>
+          {% endif %}
+          <div class="bg-dark" style="resize: none; min-height : 30vh; width: 100%;overflow-y: scroll">
+      <ul id="ChatArea">
+
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+<!--/pantalla de inicio de sesion para el usuario-->

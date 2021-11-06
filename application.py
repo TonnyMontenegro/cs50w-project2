@@ -18,21 +18,19 @@ as __name__, __doc__ (the docstring), etc.
 from functools import wraps
 
 from flask import Flask, render_template, request, session, redirect, flash, url_for
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room, send
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-socketio = SocketIO(app, cors_allowed_origins='*')
+socketio = SocketIO(app, cors_allowed_origins='*', manage_session=False)
 
-
-
-'''Local Storage'''
+'''Python Storage'''
 Users=[]
-Channels=[]
+ChannelList=[]
 Messages= dict()
-Channels.append('General')
-Messages['General']=deque()
+limite = 10
 
+#inicio de sesion requerido y proteccion de vistas
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -41,14 +39,19 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+#ruta pre definida que carga la pantalla de create y opcionalmente carga un boton que te dirije al ultimo canal usado
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html")
+    session['open_channel'] = 'NoNe_CHannEL'
+    Lastchannel=session['last_channel']
+    return render_template("create.html", ChannelList= ChannelList, Lastchannel = Lastchannel)
 
+#pantalla de login
 @app.route("/login", methods=['GET','POST'])
 def login():
     session.clear()
+    session['last_channel']= 'NoNe_CHannEL'
     username = request.form.get("username")
 
     if request.method == "GET":
@@ -59,12 +62,12 @@ def login():
             return render_template("login.html")
         else:
             Users.append(username)
-            session['username']=username
+            session['username']= username
             session.permanet=True
             session["Auth"]= True
-            socketio.emit('Join_true')
-            return redirect("/channels/General")
+            return redirect("/create")
 
+#pantalla de logout
 @app.route("/logout", methods=['GET','POST'])
 @login_required
 def logout():
@@ -78,38 +81,86 @@ def logout():
     flash("Sesion cerrada")
     return render_template("login.html")
 
-@app.route("/channels/<channel>", methods=['GET','POST'])
+#ruta pre definida que carga la pantalla de create y opcionalmente carga un boton que te dirije al ultimo canal usado
+@app.route("/create", methods=['GET','POST'])
 @login_required
-def channels_list(channel):
+def create_channel():
+    ListaCanales=ChannelList
+    Lastchannel=session['last_channel']
+    print("hello")
+    session['open_channel'] = 'NoNe_CHannEL'
+    print(ChannelList)
+    return render_template("create.html", ChannelList=ListaCanales, Lastchannel = Lastchannel)
+
+#pagina personalizada de error 404
+@app.errorhandler(404)
+def not_found(e):
+  return render_template("404.html")
+
+#ruta de cada canal
+@app.route("/channel/<channel>", methods=['GET','POST'])
+@login_required
+def ChannelChat(channel):
     user = session['username']
     session['open_channel']=channel
-
-    if channel not in Channels:
-        return redirect("/channels/General")
+    session['last_channel']=channel
+    if channel not in ChannelList:
+        flash("Lo sentimos ese servidor aun no existe, prueba a crearlo")
+        return redirect("/create")
     else:
         if request.method == "POST":
-            return redirect("/")
+            return redirect("/channel/" + channel)
         else:
-            return render_template("channels.html",user=user,users=Users,channels=Channels,messages=Messages[channel],channel=session['open_channel'])
-
+            return render_template("channel.html",user=user,users=Users,ChannelList=ChannelList,messages=Messages[channel],channel=session['open_channel'])
 
 @socketio.on('NewChannel')
 def New_channel(data):
+    print("hello")
     ChannelName = data['NewChannelName']
-    if ChannelName in Channels:
+    user= session['username']
+    if ChannelName in ChannelList:
         emit('Error', {'error': 'El canal ya se encuentra en la lista de canales'})
     else:
         if len(ChannelName) == 0:
             emit('Error', {'error': 'El canal no puede estar en blanco'})
         else:
-            Channels.append(ChannelName)
-            Messages[ChannelName] = []
-            emit('AddChannel', {'Channel': ChannelName}, broadcast=True)
+            ChannelList.append(ChannelName)
+            Messages[ChannelName] = deque(maxlen=100)
+            emit('AddChannel', {'Channel': ChannelName, 'user': user, 'channels': ChannelList}, broadcast=True)
 
-@socketio.on('Join')
-def Join_message(data):
-    Username = data['Username']
+@socketio.on('Joined')
+def Joined(data):
+    print("Joined")
+    user = session['username']
+    channel=session['open_channel']
+    if (session['open_channel'] != 'NoNe_CHannEL'):
+        print('te has unido a '+ channel)
+        join_room(channel)
+        emit('JoinNow', {'open_channel': channel}, to = channel)
+        emit('GlobalMsg', {'message': 'un '+ user +' salvaje ha aparecido!!'},to=channel)
+        print("Joined end")
+
+# @socketio.on('Leaved')
+# def Leaved(data):
+#     print("leaved")
+#     user = session['username']
+#     channel=session['open_channel']
+#     emit('GlobalMsg', {'message': user +' hizo despawn del servidor'},to=channel)
+#     leave_room(channel)
+#     print('te has salido de '+ channel)
+
+
+@socketio.on('NewMessage')
+def NewMessage(data):
     Channel = session['open_channel']
-    join_room(Channel)
-    emit('DataUser', {'user': Username, 'channel': Channel,'bot': '!: un(@)' + Username + ' salvaje ha aparecido'}, room=Channel)
-
+    username = session['username']
+    time = data['time']
+    msg = data['msg']
+    Messages[Channel].append([time ,username,msg])
+    # if(len(Messages[Channel]) > limite):
+    #     Messages[Channel].pop(10)
+    print(Channel)
+    emit('AddMsg',{'user': username, 'time':time, 'msg':msg }, to = Channel)
+    print("NewMessage End")
+if __name__ == "__main__":
+    socketio.run(app)

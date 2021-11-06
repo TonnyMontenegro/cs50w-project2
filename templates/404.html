@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+<!-- Exports header and navbar from header.html
+     or any file you want-->
+{% block title %}Page Not Found{% endblock %}
+
+{% block body %}
+<div class="jumbotron jumbotron-fluid bg-Mcard text-light justified rounded">
+  <h2> <i class="fas fa-exclamation-circle"></i> Lo sentimos esta URL que solicitaste no existe <i class="fas fa-exclamation-circle"></i></h2>
+  <div class="centered">
+  <a class="btn bg-red" href="{{ url_for('create_channel') }}">Regresar <i class="fas fa-arrow-circle-left"></i></a>
+  </div>
+</div>
+
+<!-- {{ url_for('index') }} is a var which returns url of index.html-->
+{% endblock %}

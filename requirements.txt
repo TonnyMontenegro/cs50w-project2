@@ -1,2 +1,4 @@
 Flask
-Flask-SocketIO
+Flask-SocketIO==5.0.1
+python-socketio==5.2.1
+python-engineio==4.1.0
